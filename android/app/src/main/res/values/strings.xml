@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- App Name -->
+    <string name="app_name">TOTV+</string>
+    
+    <!-- Support & Contact -->
+    <string name="support_whatsapp">009647714415816</string>
+    <string name="support_phone">+964 771 441 5816</string>
+    <string name="support_email">support@totv.plus</string>
+    <string name="whatsapp_message">مرحباً، أحتاج مساعدة في تطبيق TOTV+</string>
+    
+    <!-- Notification Channel -->
+    <string name="notification_channel_name">TOTV+ Notifications</string>
+    <string name="notification_channel_description">إشعارات تطبيق TOTV+ للمحتوى الجديد والبث المباشر</string>
+    
+    <!-- Error Messages -->
+    <string name="error_no_internet">لا يوجد اتصال بالإنترنت</string>
+    <string name="error_server">خطأ في الخادم</string>
+    <string name="error_video_load">فشل تحميل الفيديو</string>
+    
+    <!-- Features -->
+    <string name="feature_downloads">التحميلات</string>
+    <string name="feature_pip">صورة داخل صورة</string>
+    <string name="feature_chromecast">Chromecast</string>
+    
+    <!-- Deep Link -->
+    <string name="deep_link_scheme">totvplus</string>
+    <string name="deep_link_host">totv.plus</string>
+    
+    <!-- API Keys (will be overridden by build config) -->
+    <string name="movie_api_key">5b166a24c91f59178e8ce30f1f3735c0</string>
+</resources>

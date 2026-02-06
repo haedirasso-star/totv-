@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<network-security-config>
+    <!-- Base configuration for all connections -->
+    <base-config cleartextTrafficPermitted="false">
+        <trust-anchors>
+            <certificates src="system"/>
+            <certificates src="user"/>
+        </trust-anchors>
+    </base-config>
+    
+    <!-- SSL Pinning for TOTV+ CDN Servers -->
+    <domain-config cleartextTrafficPermitted="false">
+        <domain includeSubdomains="true">cdn1.totv.plus</domain>
+        <domain includeSubdomains="true">cdn2.totv.plus</domain>
+        <domain includeSubdomains="true">cdn3.totv.plus</domain>
+        <domain includeSubdomains="true">api.totv.plus</domain>
+        <domain includeSubdomains="true">drm.totv.plus</domain>
+        
+        <!-- SSL Certificate Pinning (Replace with your actual certificate SHA-256 fingerprints) -->
+        <pin-set expiration="2027-01-01">
+            <!-- Primary Certificate -->
+            <pin digest="SHA-256">AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</pin>
+            <!-- Backup Certificate -->
+            <pin digest="SHA-256">BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB=</pin>
+        </pin-set>
+    </domain-config>
+    
+    <!-- Firebase and Google Services -->
+    <domain-config cleartextTrafficPermitted="false">
+        <domain includeSubdomains="true">firebase.googleapis.com</domain>
+        <domain includeSubdomains="true">firebaseinstallations.googleapis.com</domain>
+        <domain includeSubdomains="true">firebaselogging-pa.googleapis.com</domain>
+        <domain includeSubdomains="true">firestore.googleapis.com</domain>
+    </domain-config>
+    
+    <!-- TMDB API -->
+    <domain-config cleartextTrafficPermitted="false">
+        <domain includeSubdomains="true">api.themoviedb.org</domain>
+        <domain includeSubdomains="true">image.tmdb.org</domain>
+    </domain-config>
+    
+    <!-- Debug configuration (only for development builds) -->
+    <debug-overrides>
+        <trust-anchors>
+            <certificates src="user"/>
+            <certificates src="system"/>
+        </trust-anchors>
+    </debug-overrides>
+</network-security-config>

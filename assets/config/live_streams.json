@@ -1,0 +1,193 @@
+{
+  "version": "1.0.0",
+  "last_updated": "2025-02-06T00:00:00Z",
+  "live_channels": [
+    {
+      "id": "sport_1",
+      "name": "TOTV Sport 1",
+      "name_ar": "TOTV رياضة 1",
+      "category": "sports",
+      "logo": "https://cdn.totv.plus/logos/sport1.png",
+      "streaming_urls": [
+        {
+          "quality": "auto",
+          "url": "https://cdn1.totv.plus/live/sport1/master.m3u8",
+          "backup_url": "https://cdn2.totv.plus/live/sport1/master.m3u8"
+        },
+        {
+          "quality": "1080p",
+          "url": "https://cdn1.totv.plus/live/sport1/1080p.m3u8"
+        },
+        {
+          "quality": "720p",
+          "url": "https://cdn1.totv.plus/live/sport1/720p.m3u8"
+        },
+        {
+          "quality": "480p",
+          "url": "https://cdn1.totv.plus/live/sport1/480p.m3u8"
+        }
+      ],
+      "epg_url": "https://cdn.totv.plus/epg/sport1.xml",
+      "is_live": true,
+      "drm_enabled": true,
+      "geo_restricted": false,
+      "countries": ["IQ", "SA", "AE", "EG", "JO", "LB"]
+    },
+    {
+      "id": "sport_2",
+      "name": "TOTV Sport 2",
+      "name_ar": "TOTV رياضة 2",
+      "category": "sports",
+      "logo": "https://cdn.totv.plus/logos/sport2.png",
+      "streaming_urls": [
+        {
+          "quality": "auto",
+          "url": "https://cdn1.totv.plus/live/sport2/master.m3u8",
+          "backup_url": "https://cdn2.totv.plus/live/sport2/master.m3u8"
+        }
+      ],
+      "is_live": true,
+      "drm_enabled": true,
+      "geo_restricted": false
+    },
+    {
+      "id": "premier_league",
+      "name": "Premier League Live",
+      "name_ar": "الدوري الإنجليزي المباشر",
+      "category": "sports",
+      "logo": "https://cdn.totv.plus/logos/premier_league.png",
+      "streaming_urls": [
+        {
+          "quality": "auto",
+          "url": "https://cdn1.totv.plus/live/premier/master.m3u8",
+          "backup_url": "https://cdn2.totv.plus/live/premier/master.m3u8"
+        },
+        {
+          "quality": "4k",
+          "url": "https://cdn1.totv.plus/live/premier/4k.m3u8"
+        },
+        {
+          "quality": "1080p",
+          "url": "https://cdn1.totv.plus/live/premier/1080p.m3u8"
+        }
+      ],
+      "is_live": true,
+      "drm_enabled": true,
+      "geo_restricted": true,
+      "countries": ["IQ", "SA", "AE"]
+    },
+    {
+      "id": "news_1",
+      "name": "TOTV News",
+      "name_ar": "TOTV الأخبار",
+      "category": "news",
+      "logo": "https://cdn.totv.plus/logos/news.png",
+      "streaming_urls": [
+        {
+          "quality": "auto",
+          "url": "https://cdn1.totv.plus/live/news/master.m3u8",
+          "backup_url": "https://cdn2.totv.plus/live/news/master.m3u8"
+        }
+      ],
+      "is_live": true,
+      "drm_enabled": false,
+      "geo_restricted": false
+    },
+    {
+      "id": "entertainment_1",
+      "name": "TOTV Entertainment",
+      "name_ar": "TOTV ترفيه",
+      "category": "entertainment",
+      "logo": "https://cdn.totv.plus/logos/entertainment.png",
+      "streaming_urls": [
+        {
+          "quality": "auto",
+          "url": "https://cdn1.totv.plus/live/entertainment/master.m3u8",
+          "backup_url": "https://cdn2.totv.plus/live/entertainment/master.m3u8"
+        }
+      ],
+      "is_live": true,
+      "drm_enabled": false,
+      "geo_restricted": false
+    },
+    {
+      "id": "kids_1",
+      "name": "TOTV Kids",
+      "name_ar": "TOTV أطفال",
+      "category": "kids",
+      "logo": "https://cdn.totv.plus/logos/kids.png",
+      "streaming_urls": [
+        {
+          "quality": "auto",
+          "url": "https://cdn1.totv.plus/live/kids/master.m3u8",
+          "backup_url": "https://cdn2.totv.plus/live/kids/master.m3u8"
+        }
+      ],
+      "is_live": true,
+      "drm_enabled": false,
+      "geo_restricted": false,
+      "parental_control_required": false
+    }
+  ],
+  "categories": [
+    {
+      "id": "sports",
+      "name": "Sports",
+      "name_ar": "رياضة",
+      "icon": "sports_soccer"
+    },
+    {
+      "id": "news",
+      "name": "News",
+      "name_ar": "أخبار",
+      "icon": "article"
+    },
+    {
+      "id": "entertainment",
+      "name": "Entertainment",
+      "name_ar": "ترفيه",
+      "icon": "movie"
+    },
+    {
+      "id": "kids",
+      "name": "Kids",
+      "name_ar": "أطفال",
+      "icon": "child_care"
+    }
+  ],
+  "upcoming_events": [
+    {
+      "id": "event_001",
+      "title": "Liverpool vs Manchester City",
+      "title_ar": "ليفربول ضد مانشستر سيتي",
+      "channel_id": "premier_league",
+      "start_time": "2026-02-10T20:00:00Z",
+      "end_time": "2026-02-10T22:00:00Z",
+      "thumbnail": "https://cdn.totv.plus/events/liverpool_city.jpg",
+      "category": "sports",
+      "reminder_enabled": true
+    },
+    {
+      "id": "event_002",
+      "title": "Premier League Darts: Newcastle",
+      "title_ar": "دوري الدارتس الممتاز: نيوكاسل",
+      "channel_id": "sport_1",
+      "start_time": "2026-02-05T22:00:00Z",
+      "end_time": "2026-02-06T01:00:00Z",
+      "thumbnail": "https://cdn.totv.plus/events/darts_newcastle.jpg",
+      "category": "sports",
+      "reminder_enabled": true
+    }
+  ],
+  "drm_config": {
+    "widevine_license_url": "https://drm.totv.plus/widevine/license",
+    "fairplay_certificate_url": "https://drm.totv.plus/fairplay/cert",
+    "clearkey_enabled": false
+  },
+  "fallback_streams": [
+    {
+      "name": "TOTV Emergency Stream",
+      "url": "https://backup.totv.plus/emergency/master.m3u8"
+    }
+  ]
+}
