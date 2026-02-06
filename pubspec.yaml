@@ -10,6 +10,10 @@ dependencies:
   flutter:
     sdk: flutter
   
+  # Localization (تم وضعها هنا لضمان توافق الترتيب)
+  flutter_localizations:
+    sdk: flutter
+  
   # State Management
   flutter_bloc: ^8.1.3
   equatable: ^2.0.5
@@ -47,7 +51,7 @@ dependencies:
   carousel_slider: ^4.2.1
   
   # Utilities
-  intl: ^0.18.1
+  intl: ^0.20.2  # تم التحديث هنا لحل مشكلة التعارض مع SDK
   crypto: ^3.0.3
   path_provider: ^2.1.2
   package_info_plus: ^5.0.1
@@ -55,10 +59,6 @@ dependencies:
   url_launcher: ^6.2.4
   share_plus: ^7.2.1
   permission_handler: ^11.2.0
-  
-  # Localization
-  flutter_localizations:
-    sdk: flutter
   
   # Additional
   get_it: ^7.6.7
@@ -97,7 +97,8 @@ flutter:
         - asset: assets/fonts/Cairo-Light.ttf
           weight: 300
 
-flutter_icons:
+# تم دمج إعدادات الأيقونات والسلاش سكرين بشكل صحيح
+flutter_launcher_icons:
   android: true
   ios: true
   image_path: "assets/icons/app_icon.png"
