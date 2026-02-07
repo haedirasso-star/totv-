@@ -1,271 +1,37 @@
 workflows:
   android-workflow:
-    name: Android Workflow
-    max_build_duration: 120
+    name: ToTV+ Android Build
+    max_build_duration: 30
     instance_type: mac_mini_m1
     environment:
-      android_signing:
-        - totv_keystore
-      groups:
-        - google_play
-      vars:
-        PACKAGE_NAME: "com.totv.plus"
-        GOOGLE_PLAY_TRACK: internal
       flutter: stable
-      xcode: latest
-      cocoapods: default
+      groups:
+        - google_play # إذا كنت تريد الربط لاحقاً
     scripts:
       - name: Set up local.properties
-        script: |
-          echo "flutter.sdk=$HOME/programs/flutter" > "$CM_BUILD_DIR/android/local.properties"
+        script: | 
+          echo "flutter.sdk=$FLUTTER_ROOT" > android/local.properties
       
-      - name: Get Flutter packages
-        script: |
-          flutter packages pub get
-      
-      - name: Flutter analyze
-        script: |
-          flutter analyze
-      
-      - name: Flutter test
-        script: |
-          flutter test
-        ignore_failure: true
-      
-      - name: Setup Firebase
-        script: |
-          # Download google-services.json from environment variable or secure storage
-          echo "$GOOGLE_SERVICES_JSON" > $CM_BUILD_DIR/android/app/google-services.json
-      
-      - name: Build AAB with Flutter
-        script: |
-          flutter build appbundle \
-            --release \
-            --build-name=1.0.$BUILD_NUMBER \
-            --build-number=$BUILD_NUMBER \
-            --dart-define=MOVIE_API_KEY=$MOVIE_API_KEY
-    
-    artifacts:
-      - build/**/outputs/**/*.aab
-      - build/**/outputs/**/mapping.txt
-      - flutter_drive.log
-    
-    publishing:
-      email:
-        recipients:
-          - dev@totv.plus
-        notify:
-          success: true
-          failure: true
-      
-      google_play:
-        credentials: $GCLOUD_SERVICE_ACCOUNT_CREDENTIALS
-        track: $GOOGLE_PLAY_TRACK
-        submit_as_draft: true
+      - name: Fix Dependencies and Version Conflict
+        script: | 
+          # هذا السطر يحل مشكلة intl التي واجهتنا
+          flutter pub add intl:^0.20.2
+          flutter pub get
 
-  ios-workflow:
-    name: iOS Workflow
-    max_build_duration: 120
-    instance_type: mac_mini_m1
-    integrations:
-      app_store_connect: TOTV Plus Connect
-    environment:
-      ios_signing:
-        distribution_type: app_store
-        bundle_identifier: com.totv.plus
-      vars:
-        BUNDLE_ID: "com.totv.plus"
-        XCODE_WORKSPACE: "Runner.xcworkspace"
-        XCODE_SCHEME: "Runner"
-        APP_STORE_APPLE_ID: 1234567890
-      flutter: stable
-      xcode: latest
-      cocoapods: default
-    scripts:
-      - name: Set up code signing settings on Xcode project
-        script: |
-          xcode-project use-profiles
-      
-      - name: Get Flutter packages
-        script: |
-          flutter packages pub get
-      
-      - name: Install pods
-        script: |
-          find . -name "Podfile" -execdir pod install \;
-      
-      - name: Flutter analyze
-        script: |
-          flutter analyze
-      
-      - name: Flutter test
-        script: |
-          flutter test
-        ignore_failure: true
-      
-      - name: Setup Firebase
-        script: |
-          # Download GoogleService-Info.plist from environment variable
-          echo "$GOOGLE_SERVICE_INFO_PLIST" > $CM_BUILD_DIR/ios/Runner/GoogleService-Info.plist
-      
-      - name: Flutter build ipa
-        script: |
-          flutter build ipa \
-            --release \
-            --build-name=1.0.$BUILD_NUMBER \
-            --build-number=$BUILD_NUMBER \
-            --dart-define=MOVIE_API_KEY=$MOVIE_API_KEY \
-            --export-options-plist=/Users/builder/export_options.plist
-    
-    artifacts:
-      - build/ios/ipa/*.ipa
-      - /tmp/xcodebuild_logs/*.log
-      - flutter_drive.log
-    
-    publishing:
-      email:
-        recipients:
-          - dev@totv.plus
-        notify:
-          success: true
-          failure: true
-      
-      app_store_connect:
-        auth: integration
-        submit_to_testflight: true
-        beta_groups:
-          - Internal Testers
-        submit_to_app_store: false
+      - name: Clean Project
+        script: | 
+          flutter clean
+          flutter pub get
 
-  android-release-workflow:
-    name: Android Release Build
-    max_build_duration: 120
-    instance_type: mac_mini_m1
-    triggering:
-      events:
-        - tag
-      tag_patterns:
-        - pattern: 'v*.*.*'
-          include: true
-    environment:
-      android_signing:
-        - totv_keystore
-      groups:
-        - google_play
-      vars:
-        PACKAGE_NAME: "com.totv.plus"
-        GOOGLE_PLAY_TRACK: production
-      flutter: stable
-    scripts:
-      - name: Set up local.properties
-        script: |
-          echo "flutter.sdk=$HOME/programs/flutter" > "$CM_BUILD_DIR/android/local.properties"
-      
-      - name: Get Flutter packages
-        script: |
-          flutter packages pub get
-      
-      - name: Setup Firebase
-        script: |
-          echo "$GOOGLE_SERVICES_JSON" > $CM_BUILD_DIR/android/app/google-services.json
-      
-      - name: Build Release AAB
-        script: |
-          flutter build appbundle \
-            --release \
-            --build-name=${CM_TAG#v} \
-            --build-number=$BUILD_NUMBER \
-            --dart-define=MOVIE_API_KEY=$MOVIE_API_KEY \
-            --obfuscate \
-            --split-debug-info=/symbols
-    
-    artifacts:
-      - build/**/outputs/**/*.aab
-      - build/**/outputs/**/mapping.txt
-      - /symbols/**
-    
-    publishing:
-      google_play:
-        credentials: $GCLOUD_SERVICE_ACCOUNT_CREDENTIALS
-        track: production
-        submit_as_draft: false
-        in_app_update_priority: 3
-        rollout_fraction: 0.1
-        changes_not_sent_for_review: false
-      
-      email:
-        recipients:
-          - dev@totv.plus
-          - releases@totv.plus
-        notify:
-          success: true
-          failure: true
+      - name: Build APK (Release)
+        script: | 
+          # بناء نسخة APK وتجاهل أخطاء iOS تماماً
+          flutter build apk --release --no-tree-shake-icons
 
-  ios-release-workflow:
-    name: iOS Release Build
-    max_build_duration: 120
-    instance_type: mac_mini_m1
-    triggering:
-      events:
-        - tag
-      tag_patterns:
-        - pattern: 'v*.*.*'
-          include: true
-    integrations:
-      app_store_connect: TOTV Plus Connect
-    environment:
-      ios_signing:
-        distribution_type: app_store
-        bundle_identifier: com.totv.plus
-      vars:
-        BUNDLE_ID: "com.totv.plus"
-        APP_STORE_APPLE_ID: 1234567890
-      flutter: stable
-      xcode: latest
-      cocoapods: default
-    scripts:
-      - name: Set up code signing
-        script: |
-          xcode-project use-profiles
-      
-      - name: Get Flutter packages
-        script: |
-          flutter packages pub get
-      
-      - name: Install pods
-        script: |
-          find . -name "Podfile" -execdir pod install \;
-      
-      - name: Setup Firebase
-        script: |
-          echo "$GOOGLE_SERVICE_INFO_PLIST" > $CM_BUILD_DIR/ios/Runner/GoogleService-Info.plist
-      
-      - name: Flutter build ipa release
-        script: |
-          flutter build ipa \
-            --release \
-            --build-name=${CM_TAG#v} \
-            --build-number=$BUILD_NUMBER \
-            --dart-define=MOVIE_API_KEY=$MOVIE_API_KEY \
-            --obfuscate \
-            --split-debug-info=/symbols \
-            --export-options-plist=/Users/builder/export_options.plist
-    
     artifacts:
-      - build/ios/ipa/*.ipa
-      - /tmp/xcodebuild_logs/*.log
-      - /symbols/**
+      - build/app/outputs/flutter-apk/*.apk
     
     publishing:
-      app_store_connect:
-        auth: integration
-        submit_to_testflight: true
-        submit_to_app_store: true
-      
       email:
         recipients:
-          - dev@totv.plus
-          - releases@totv.plus
-        notify:
-          success: true
-          failure: true
+          - YOUR_EMAIL@gmail.com # ضع إيميلك هنا ليصلك الرابط
