@@ -1,37 +1,45 @@
 workflows:
-  android-workflow:
-    name: ToTV+ Android Build
+  totv-plus-workflow:
+    name: ToTV+ Multi-Platform Fixer
     max_build_duration: 30
     instance_type: mac_mini_m1
     environment:
       flutter: stable
-      groups:
-        - google_play # إذا كنت تريد الربط لاحقاً
+      xcode: latest # ضروري لبناء ملفات الأيفون
+      cocoapods: default
     scripts:
-      - name: Set up local.properties
+      - name: Auto-Create iOS Files
         script: | 
-          echo "flutter.sdk=$FLUTTER_ROOT" > android/local.properties
-      
-      - name: Fix Dependencies and Version Conflict
+          # هذا الأمر يعيد بناء مجلد ios إذا كان ناقصاً أو به أخطاء
+          flutter create . --platforms=ios,android
+          
+      - name: Force Fix Dependencies (intl & others)
         script: | 
-          # هذا السطر يحل مشكلة intl التي واجهتنا
+          # حل مشكلة تعارض الإصدارات إجبارياً
           flutter pub add intl:^0.20.2
           flutter pub get
 
-      - name: Clean Project
+      - name: iOS Dependency Manager (Pods)
         script: | 
-          flutter clean
-          flutter pub get
+          # تهيئة ملفات الأيفون الداخلية
+          cd ios
+          pod install
+          cd ..
 
-      - name: Build APK (Release)
+      - name: Build Android APK
         script: | 
-          # بناء نسخة APK وتجاهل أخطاء iOS تماماً
           flutter build apk --release --no-tree-shake-icons
+
+      - name: Build iOS (No-Sign)
+        script: | 
+          # بناء نسخة iOS تجريبية للتأكد من سلامة الكود
+          flutter build ios --debug --no-codesign
 
     artifacts:
       - build/app/outputs/flutter-apk/*.apk
+      - build/ios/iphoneos/*.app
     
     publishing:
       email:
         recipients:
-          - YOUR_EMAIL@gmail.com # ضع إيميلك هنا ليصلك الرابط
+          - haedirasso@gmail.com # ضع إيميلك هنا ليصلك رابط التحميل
