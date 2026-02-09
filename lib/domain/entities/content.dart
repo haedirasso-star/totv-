@@ -1,7 +1,17 @@
 import 'package:equatable/equatable.dart';
 
+/// نوع المحتوى - تم تحديثه ليدعم التصنيفات الجديدة لعام 2026
+enum ContentType {
+  liveTV,
+  movie,
+  series,
+  sports,
+  documentary,
+  radio
+}
+
 /// Content Entity - Domain Layer
-/// يمثل محتوى القنوات المباشرة والأفلام
+/// يمثل محتوى القنوات المباشرة والأفلام مع دعم كامل لبيانات الهندسة العكسية
 class Content extends Equatable {
   final String id;
   final String title;
@@ -103,45 +113,66 @@ class Content extends Equatable {
   }
 }
 
-/// نوع المحتوى
-enum ContentType {
-  liveTV,
-  movie,
-  series,
-  sports,
-}
-
-/// رابط البث مع معلومات إضافية
+/// رابط البث مع دعم كامل للـ Headers المستخرجة من JADX
 class StreamingUrl extends Equatable {
   final String url;
   final String quality;
   final Map<String, String>? headers;
   final String? httpReferrer;
+  final String? userAgent; // مهم جداً للهندسة العكسية
   final bool requiresAuth;
+  final Map<String, String>? drmConfig; // دعم Widevine/ClearKey لعام 2026
 
   const StreamingUrl({
     required this.url,
     this.quality = 'auto',
     this.headers,
     this.httpReferrer,
+    this.userAgent,
     this.requiresAuth = false,
+    this.drmConfig,
   });
 
   @override
-  List<Object?> get props => [url, quality, headers, httpReferrer, requiresAuth];
+  List<Object?> get props => [
+        url, 
+        quality, 
+        headers, 
+        httpReferrer, 
+        userAgent, 
+        requiresAuth, 
+        drmConfig
+      ];
 
+  /// دالة توليد الـ Headers النهائية للمشغل
   Map<String, String> getHeaders() {
-    final Map<String, String> allHeaders = {};
-    
+    final Map<String, String> allHeaders = {
+      'Accept': '*/*',
+      'Connection': 'keep-alive',
+    };
+
+    if (userAgent != null) {
+      allHeaders['User-Agent'] = userAgent!;
+    } else {
+      // User-Agent افتراضي قوي لعام 2026
+      allHeaders['User-Agent'] = 'Mozilla/5.0 (Linux; Android 12; TV) AppleWebKit/537.36';
+    }
+
+    if (httpReferrer != null) {
+      allHeaders['Referer'] = httpReferrer!;
+      // استخراج الـ Origin تلقائياً من الـ Referer
+      try {
+        final uri = Uri.parse(httpReferrer!);
+        allHeaders['Origin'] = '${uri.scheme}://${uri.host}';
+      } catch (_) {
+        allHeaders['Origin'] = httpReferrer!;
+      }
+    }
+
     if (headers != null) {
       allHeaders.addAll(headers!);
     }
-    
-    if (httpReferrer != null) {
-      allHeaders['Referer'] = httpReferrer!;
-      allHeaders['Origin'] = httpReferrer!;
-    }
-    
+
     return allHeaders;
   }
 }
@@ -151,23 +182,3 @@ class QualityOption extends Equatable {
   final String label;
   final String resolution;
   final String url;
-  final int bitrate;
-
-  const QualityOption({
-    required this.label,
-    required this.resolution,
-    required this.url,
-    this.bitrate = 0,
-  });
-
-  @override
-  List<Object?> get props => [label, resolution, url, bitrate];
-}
-
-/// حالة المحتوى
-enum ContentStatus {
-  idle,
-  loading,
-  loaded,
-  error,
-}
