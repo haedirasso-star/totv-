@@ -14,8 +14,45 @@ import 'presentation/bloc/content_bloc.dart';
 final sl = GetIt.instance;
 
 Future<void> init() async {
-  //! 1. Presentation Layer (Bloc)
-  sl.registerFactory(() => ContentBloc(repository: sl()));
+  //! 5. External Plugins (نبدأ بها أولاً لضمان جاهزيتها)
+  
+  // تهيئة SharedPreferences مع حماية
+  try {
+    final sharedPreferences = await SharedPreferences.getInstance();
+    sl.registerLazySingleton(() => sharedPreferences);
+  } catch (e) {
+    print("Error initializing SharedPreferences: $e");
+  }
+
+  // تهيئة Dio مع إعدادات احترافية لسحب محتوى فودو
+  sl.registerLazySingleton(() => Dio(
+    BaseOptions(
+      connectTimeout: const Duration(seconds: 20),
+      receiveTimeout: const Duration(seconds: 20),
+      // إضافة Header ليوهم المواقع (مثل فودو) أن الطلب من متصفح حقيقي
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+      },
+    ),
+  ));
+
+  // تهيئة Firebase Remote Config
+  try {
+    final remoteConfig = FirebaseRemoteConfig.instance;
+    sl.registerLazySingleton(() => remoteConfig);
+  } catch (e) {
+    print("Remote Config Error: $e");
+  }
+
+  //! 4. Core Services
+  sl.registerLazySingleton(() => M3UParserService());
+  sl.registerLazySingleton(() => FirebaseRemoteConfigService(sl()));
+
+  //! 3. Data Sources
+  sl.registerLazySingleton<MovieRemoteDataSource>(
+    // هنا سنقوم بتعديل الـ DataSource لاحقاً ليسحب من https://movie.vodu.me/index.php
+    () => MovieRemoteDataSourceImpl(dio: sl()),
+  );
 
   //! 2. Domain Layer (Repositories)
   sl.registerLazySingleton<ContentRepository>(
@@ -27,30 +64,6 @@ Future<void> init() async {
     ),
   );
 
-  //! 3. Data Sources
-  sl.registerLazySingleton<MovieRemoteDataSource>(
-    () => MovieRemoteDataSourceImpl(dio: sl()),
-  );
-
-  //! 4. Core Services
-  sl.registerLazySingleton(() => M3UParserService());
-  sl.registerLazySingleton(() => FirebaseRemoteConfigService(sl()));
-
-  //! 5. External Plugins (المكتبات الخارجية)
-  
-  // تهيئة Firebase Remote Config
-  final remoteConfig = FirebaseRemoteConfig.instance;
-  sl.registerLazySingleton(() => remoteConfig);
-
-  // تهيئة Dio لعمليات الـ HTTP
-  sl.registerLazySingleton(() => Dio(
-    BaseOptions(
-      connectTimeout: const Duration(seconds: 15),
-      receiveTimeout: const Duration(seconds: 15),
-    ),
-  ));
-
-  // تهيئة SharedPreferences (اختياري للإعدادات المحلية)
-  final sharedPreferences = await SharedPreferences.getInstance();
-  sl.registerLazySingleton(() => sharedPreferences);
+  //! 1. Presentation Layer (Bloc)
+  sl.registerFactory(() => ContentBloc(repository: sl()));
 }
