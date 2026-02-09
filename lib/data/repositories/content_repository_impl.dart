@@ -1,4 +1,5 @@
 import 'package:dartz/dartz.dart';
+import 'package:dio/dio.dart'; // تأكد من وجود هذا الاستيراد
 import '../../domain/entities/content.dart';
 import '../../domain/repositories/content_repository.dart';
 import '../../core/error/failures.dart';
@@ -10,6 +11,7 @@ class ContentRepositoryImpl implements ContentRepository {
   final M3UParserService m3uParser;
   final FirebaseRemoteConfigService remoteConfig;
   final MovieRemoteDataSource movieDataSource;
+  final Dio dio; // أضفنا هذا السطر
 
   List<Content> _cachedChannels = [];
 
@@ -17,9 +19,10 @@ class ContentRepositoryImpl implements ContentRepository {
     required this.m3uParser,
     required this.remoteConfig,
     required this.movieDataSource,
+    required this.dio, // أضفنا هذا السطر هنا أيضاً
   });
 
-  // قائمة القنوات الافتراضية - محدثة لعام 2026 مع دعم الـ Headers
+  // قائمة القنوات الافتراضية
   static const String _defaultM3U = '''
 #EXTM3U
 #EXTINF:-1 tvg-id="AlRabiaaTV.iq" http-referrer="https://player.castr.com/",Al Rabiaa TV (1080p)
@@ -33,15 +36,20 @@ https://streams.spacetoon.com/live/stchannel/smil:livesmil.smil/playlist.m3u8
   @override
   Future<Either<Failure, List<Content>>> getLiveChannels() async {
     try {
-      // محاولة التحديث من Firebase أولاً
       try {
         await remoteConfig.fetchAndActivate();
         final remoteM3u = remoteConfig.getChannelsM3U();
+        
         if (remoteM3u.isNotEmpty) {
-          _cachedChannels = m3uParser.parseM3U(remoteM3u);
+          // إذا كان الرابط يبدأ بـ http، نقوم بجلب محتواه عبر Dio
+          if (remoteM3u.trim().startsWith('http')) {
+            final response = await dio.get(remoteM3u);
+            _cachedChannels = m3uParser.parseM3U(response.data.toString());
+          } else {
+            _cachedChannels = m3uParser.parseM3U(remoteM3u);
+          }
         }
       } catch (_) {
-        // إذا فشل الفايربيس نستخدم الافتراضي
         if (_cachedChannels.isEmpty) {
           _cachedChannels = m3uParser.parseM3U(_defaultM3U);
         }
@@ -85,7 +93,6 @@ https://streams.spacetoon.com/live/stchannel/smil:livesmil.smil/playlist.m3u8
   @override
   Future<Either<Failure, Content>> getContentDetails(String id) async {
     try {
-      // البحث في الكاش أولاً (للقنوات)
       final content = _cachedChannels.firstWhere(
         (c) => c.id == id,
         orElse: () => throw Exception('Not Found in Cache'),
@@ -119,7 +126,6 @@ https://streams.spacetoon.com/live/stchannel/smil:livesmil.smil/playlist.m3u8
 
   @override
   Future<Either<Failure, StreamingUrl>> refreshStreamingUrl(String contentId) async {
-    // هذه الدالة مهمة لروابط JADX المتغيرة
     try {
       final newUrl = await movieDataSource.refreshUrl(contentId);
       return Right(newUrl);
