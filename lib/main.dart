@@ -4,22 +4,21 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-// استيراد ملفاتنا التي أنشأناها خطوة بخطوة
+// استيراد الملفات الخاصة بنا
 import 'injection_container.dart' as di; 
 import 'presentation/bloc/content_bloc.dart';
 import 'presentation/pages/home_page.dart';
 
 void main() async {
-  // التأكد من تهيئة أدوات فلاتر قبل أي شيء
   WidgetsFlutterBinding.ensureInitialized();
   
   // 1. تهيئة Firebase
   await Firebase.initializeApp();
   
-  // 2. تهيئة محرك حقن التبعيات (Dependency Injection)
+  // 2. تهيئة محرك حقن التبعيات - تأكد أن الدالة في الملف الآخر اسمها init
   await di.init();
   
-  // 3. ضبط إعدادات شريط الحالة (Status Bar) لعام 2026
+  // 3. إعدادات النظام وشريط الحالة
   SystemChrome.setSystemUIOverlayStyle(
     const SystemUiOverlayStyle(
       statusBarColor: Colors.transparent,
@@ -29,7 +28,6 @@ void main() async {
     ),
   );
 
-  // تثبيت اتجاه الشاشة (اختياري، يفضل تثبيته للهواتف)
   await SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,
     DeviceOrientation.portraitDown,
@@ -43,20 +41,18 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // نغلف التطبيق بالكامل بالـ Bloc ليكون متاحاً في كل الصفحات
     return MultiBlocProvider(
       providers: [
         BlocProvider<ContentBloc>(
+          // هنا نستخدم di.sl للتأكد من جلب الـ Bloc المعرف في الـ Injection
           create: (context) => di.sl<ContentBloc>()..add(FetchHomeContent()),
         ),
       ],
       child: MaterialApp(
         title: 'ToTV+',
         debugShowCheckedModeBanner: false,
-        
-        // إعدادات الثيم الاحترافي - Dark Mode 2026
         theme: ThemeData(
-          useMaterial3: true, // تفعيل Material 3
+          useMaterial3: true,
           brightness: Brightness.dark,
           primaryColor: const Color(0xFFFFA726),
           scaffoldBackgroundColor: Colors.black,
@@ -65,7 +61,6 @@ class MyApp extends StatelessWidget {
             secondary: Color(0xFF1976D2),
             surface: Color(0xFF121212),
           ),
-          // استخدام خط كايرو المتوافق مع التصميم العربي
           textTheme: GoogleFonts.cairoTextTheme(
             ThemeData.dark().textTheme,
           ),
@@ -113,7 +108,6 @@ class _SplashScreenState extends State<SplashScreen>
 
     _controller.forward();
 
-    // الانتقال للصفحة الرئيسية بعد انتهاء التحميل
     Future.delayed(const Duration(seconds: 4), () {
       if (mounted) {
         Navigator.of(context).pushReplacement(
@@ -155,7 +149,6 @@ class _SplashScreenState extends State<SplashScreen>
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  // شعار احترافي بسيط
                   Container(
                     padding: const EdgeInsets.all(20),
                     decoration: BoxDecoration(
