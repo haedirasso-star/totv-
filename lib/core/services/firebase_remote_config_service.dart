@@ -1,8 +1,9 @@
 import 'package:firebase_remote_config/firebase_remote_config.dart';
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 
-/// Firebase Remote Config Service
-/// يدير التحديثات البعيدة للقنوات والإعدادات
+/// Firebase Remote Config Service - 2026 Updated
+/// يدير التحديثات البعيدة للقنوات والإعدادات مع دعم التحديث اللحظي
 class FirebaseRemoteConfigService {
   final FirebaseRemoteConfig _remoteConfig;
   
@@ -12,97 +13,101 @@ class FirebaseRemoteConfigService {
   static const String _movieApiKeyKey = 'movie_api_key';
   static const String _featuredContentKey = 'featured_content';
   static const String _appSettingsKey = 'app_settings';
-  
-  /// تهيئة Remote Config
+  static const String _globalHeadersKey = 'global_streaming_headers';
+
+  /// تهيئة Remote Config مع إعدادات ذكية
   Future<void> initialize() async {
     try {
       await _remoteConfig.setConfigSettings(
         RemoteConfigSettings(
           fetchTimeout: const Duration(seconds: 30),
-          minimumFetchInterval: const Duration(hours: 1),
+          // في مرحلة التطوير نجعل التحديث فورياً، وفي الإنتاج كل ساعة
+          minimumFetchInterval: kDebugMode ? Duration.zero : const Duration(hours: 1),
         ),
       );
       
-      // القيم الافتراضية
+      // القيم الافتراضية لضمان عمل التطبيق حتى بدون إنترنت في المرة الأولى
       await _remoteConfig.setDefaults({
-        _movieApiKeyKey: '5b166a24c91f59178e8ce30f1f3735c0',
+        _movieApiKeyKey: '5b166a24c91f59178e8ce30f1f3735c0', // TMDB Key
         _channelsKey: '',
         _featuredContentKey: '[]',
+        _globalHeadersKey: jsonEncode({
+          'User-Agent': 'ToTV_Plus_Android_2026',
+          'X-Requested-With': 'com.totv.plus'
+        }),
         _appSettingsKey: jsonEncode({
           'enable_ads': false,
           'enable_analytics': true,
           'min_app_version': '1.0.0',
+          'maintenance_mode': false,
         }),
       });
       
       await fetchAndActivate();
+
+      // تفعيل التحديثات اللحظية (Real-time Config) لعام 2026
+      _remoteConfig.onConfigUpdated.listen((event) async {
+        await _remoteConfig.activate();
+        if (kDebugMode) print('Remote Config Updated Automatically!');
+      });
+
     } catch (e) {
-      print('Error initializing Remote Config: $e');
+      debugPrint('Error initializing Remote Config: $e');
     }
   }
   
-  /// جلب وتفعيل القيم الجديدة
+  /// جلب وتفعيل القيم الجديدة يدوياً
   Future<bool> fetchAndActivate() async {
     try {
       final activated = await _remoteConfig.fetchAndActivate();
       return activated;
     } catch (e) {
-      print('Error fetching Remote Config: $e');
+      debugPrint('Error fetching Remote Config: $e');
       return false;
     }
   }
   
-  /// الحصول على مفتاح API الأفلام
-  String getMovieApiKey() {
-    return _remoteConfig.getString(_movieApiKeyKey);
-  }
-  
   /// الحصول على قائمة القنوات M3U
   String getChannelsM3U() {
-    return _remoteConfig.getString(_channelsKey);
+    final m3u = _remoteConfig.getString(_channelsKey);
+    return m3u.isNotEmpty ? m3u : '';
   }
   
-  /// الحصول على المحتوى المميز
+  /// الحصول على الـ Headers العالمية المستخرجة من JADX لتشغيل القنوات
+  Map<String, String> getGlobalHeaders() {
+    try {
+      final jsonString = _remoteConfig.getString(_globalHeadersKey);
+      return Map<String, String>.from(jsonDecode(jsonString));
+    } catch (e) {
+      return {'User-Agent': 'ToTV_Plus_Android_2026'};
+    }
+  }
+
+  /// الحصول على المحتوى المميز (Slider)
   List<Map<String, dynamic>> getFeaturedContent() {
     try {
       final jsonString = _remoteConfig.getString(_featuredContentKey);
-      if (jsonString.isEmpty) return [];
+      if (jsonString.isEmpty || jsonString == '[]') return [];
       final List<dynamic> decoded = jsonDecode(jsonString);
       return decoded.cast<Map<String, dynamic>>();
     } catch (e) {
-      print('Error parsing featured content: $e');
+      debugPrint('Error parsing featured content: $e');
       return [];
     }
   }
   
-  /// الحصول على إعدادات التطبيق
+  /// الحصول على إعدادات التطبيق (إعلانات، وضع صيانة، إلخ)
   Map<String, dynamic> getAppSettings() {
     try {
       final jsonString = _remoteConfig.getString(_appSettingsKey);
       return jsonDecode(jsonString) as Map<String, dynamic>;
     } catch (e) {
-      print('Error parsing app settings: $e');
       return {};
     }
   }
-  
-  /// الحصول على قيمة نصية
-  String getString(String key) {
-    return _remoteConfig.getString(key);
-  }
-  
-  /// الحصول على قيمة رقمية
-  int getInt(String key) {
-    return _remoteConfig.getInt(key);
-  }
-  
-  /// الحصول على قيمة منطقية
-  bool getBool(String key) {
-    return _remoteConfig.getBool(key);
-  }
-  
-  /// الحصول على قيمة مزدوجة
-  double getDouble(String key) {
-    return _remoteConfig.getDouble(key);
-  }
+
+  // الدوال المساعدة للوصول السريع
+  String getString(String key) => _remoteConfig.getString(key);
+  bool getBool(String key) => _remoteConfig.getBool(key);
+  int getInt(String key) => _remoteConfig.getInt(key);
 }
