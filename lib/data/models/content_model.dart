@@ -1,7 +1,6 @@
 import '../../domain/entities/content.dart';
 
 /// Content Model - Data Layer
-/// المسؤول عن تحويل البيانات بين السيرفر (JSON) والتطبيق (Entity)
 class ContentModel extends Content {
   const ContentModel({
     required String id,
@@ -41,7 +40,6 @@ class ContentModel extends Content {
           metadata: metadata,
         );
 
-  /// تحويل JSON قادم من API إلى كائن ContentModel
   factory ContentModel.fromJson(Map<String, dynamic> json) {
     return ContentModel(
       id: json['id']?.toString() ?? '',
@@ -70,7 +68,6 @@ class ContentModel extends Content {
     );
   }
 
-  /// تحويل الكائن إلى JSON لإرساله للسيرفر أو تخزينه محلياً
   Map<String, dynamic> toJson() {
     return {
       'id': id,
@@ -97,7 +94,6 @@ class ContentModel extends Content {
     };
   }
 
-  /// دالة مساعدة لتحويل النص إلى Enum ContentType بشكل آمن
   static ContentType _parseContentType(dynamic type) {
     final typeString = type?.toString().toLowerCase();
     return ContentType.values.firstWhere(
@@ -107,7 +103,6 @@ class ContentModel extends Content {
   }
 }
 
-/// StreamingUrl Model - تحويل بيانات روابط البث
 class StreamingUrlModel extends StreamingUrl {
   const StreamingUrlModel({
     required String url,
@@ -152,18 +147,16 @@ class StreamingUrlModel extends StreamingUrl {
   }
 }
 
-/// QualityOption Model - تحويل خيارات الجودة
+/// تم حذف bitrate هنا ليتوافق مع الـ Entity الأساسية
 class QualityOptionModel extends QualityOption {
   const QualityOptionModel({
     required String label,
     required String resolution,
     required String url,
-    int bitrate = 0,
   }) : super(
           label: label,
           resolution: resolution,
           url: url,
-          bitrate: bitrate,
         );
 
   factory QualityOptionModel.fromJson(Map<String, dynamic> json) {
@@ -171,7 +164,6 @@ class QualityOptionModel extends QualityOption {
       label: json['label'] ?? '',
       resolution: json['resolution'] ?? '',
       url: json['url'] ?? '',
-      bitrate: json['bitrate'] ?? 0,
     );
   }
 
@@ -180,7 +172,6 @@ class QualityOptionModel extends QualityOption {
       'label': label,
       'resolution': resolution,
       'url': url,
-      'bitrate': bitrate,
     };
   }
 }
