@@ -11,7 +11,6 @@ enum ContentType {
 }
 
 /// Content Entity - Domain Layer
-/// يمثل محتوى القنوات المباشرة والأفلام مع دعم كامل لبيانات الهندسة العكسية
 class Content extends Equatable {
   final String id;
   final String title;
@@ -119,9 +118,9 @@ class StreamingUrl extends Equatable {
   final String quality;
   final Map<String, String>? headers;
   final String? httpReferrer;
-  final String? userAgent; // مهم جداً للهندسة العكسية
+  final String? userAgent;
   final bool requiresAuth;
-  final Map<String, String>? drmConfig; // دعم Widevine/ClearKey لعام 2026
+  final Map<String, String>? drmConfig;
 
   const StreamingUrl({
     required this.url,
@@ -144,7 +143,6 @@ class StreamingUrl extends Equatable {
         drmConfig
       ];
 
-  /// دالة توليد الـ Headers النهائية للمشغل
   Map<String, String> getHeaders() {
     final Map<String, String> allHeaders = {
       'Accept': '*/*',
@@ -154,13 +152,11 @@ class StreamingUrl extends Equatable {
     if (userAgent != null) {
       allHeaders['User-Agent'] = userAgent!;
     } else {
-      // User-Agent افتراضي قوي لعام 2026
       allHeaders['User-Agent'] = 'Mozilla/5.0 (Linux; Android 12; TV) AppleWebKit/537.36';
     }
 
     if (httpReferrer != null) {
       allHeaders['Referer'] = httpReferrer!;
-      // استخراج الـ Origin تلقائياً من الـ Referer
       try {
         final uri = Uri.parse(httpReferrer!);
         allHeaders['Origin'] = '${uri.scheme}://${uri.host}';
@@ -177,8 +173,18 @@ class StreamingUrl extends Equatable {
   }
 }
 
-/// خيارات الجودة المتاحة
+/// خيارات الجودة المتاحة - تم الإصلاح هنا
 class QualityOption extends Equatable {
   final String label;
   final String resolution;
   final String url;
+
+  const QualityOption({
+    required this.label,
+    required this.resolution,
+    required this.url,
+  });
+
+  @override
+  List<Object?> get props => [label, resolution, url];
+}
