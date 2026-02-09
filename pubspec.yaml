@@ -68,14 +68,17 @@ dev_dependencies:
 flutter:
   uses-material-design: true
   
-  assets:
-    - assets/images/
-    - assets/icons/
-    - assets/m3u/
+  # تم تعطيل المسارات التالية مؤقتاً لأنها تسبب فشل البناء لعدم وجود ملفات فيزيائية داخلها
+  # لكي تنجح عملية الـ Build، يجب أن تكون هذه المجلدات موجودة وبداخلها ملف واحد على الأقل
   
-  fonts:
-    - family: Cairo
-      fonts:
-        - asset: assets/fonts/Cairo-Regular.ttf
-        - asset: assets/fonts/Cairo-Bold.ttf
-          weight: 700
+  # assets:
+  #   - assets/images/
+  #   - assets/icons/
+  #   - assets/m3u/
+  
+  # fonts:
+  #   - family: Cairo
+  #     fonts:
+  #       - asset: assets/fonts/Cairo-Regular.ttf
+  #       - asset: assets/fonts/Cairo-Bold.ttf
+  #         weight: 700
