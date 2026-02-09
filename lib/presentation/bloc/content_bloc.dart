@@ -3,7 +3,7 @@ import 'package:equatable/equatable.dart';
 import '../../domain/entities/content.dart';
 import '../../domain/repositories/content_repository.dart';
 
-// --- Events ---
+// --- Events (الأحداث) ---
 abstract class ContentEvent extends Equatable {
   const ContentEvent();
   @override
@@ -19,14 +19,15 @@ class SearchContentEvent extends ContentEvent {
   List<Object?> get props => [query];
 }
 
-class ChangeCategoryEvent extends ContentEvent {
-  final String category;
-  const ChangeCategoryEvent(this.category);
+// الحدث الجديد: طلب تشغيل الفيديو وجلب الرابط من فودو
+class PlayVideoEvent extends ContentEvent {
+  final Content content;
+  const PlayVideoEvent(this.content);
   @override
-  List<Object?> get props => [category];
+  List<Object?> get props => [content];
 }
 
-// --- States ---
+// --- States (الحالات) ---
 abstract class ContentState extends Equatable {
   const ContentState();
   @override
@@ -36,6 +37,15 @@ abstract class ContentState extends Equatable {
 class ContentInitial extends ContentState {}
 
 class ContentLoading extends ContentState {}
+
+// حالة جديدة: تظهر عند جلب رابط الفيديو بنجاح للانتقال للمشغل
+class VideoReadyState extends ContentState {
+  final String videoUrl;
+  final Content content;
+  const VideoReadyState(this.videoUrl, this.content);
+  @override
+  List<Object?> get props => [videoUrl, content];
+}
 
 class ContentLoaded extends ContentState {
   final List<Content> liveChannels;
@@ -61,12 +71,12 @@ class ContentError extends ContentState {
 
 // --- Bloc Implementation ---
 class ContentBloc extends Bloc<ContentEvent, ContentState> {
-  // نعتمد على Interface (العقد) وليس التنفيذ الفعلي لضمان مرونة الكود
   final ContentRepository repository;
 
   ContentBloc({required this.repository}) : super(ContentInitial()) {
     on<FetchHomeContent>(_onFetchHomeContent);
     on<SearchContentEvent>(_onSearchContent);
+    on<PlayVideoEvent>(_onPlayVideo); // معالج حدث التشغيل الجديد
   }
 
   Future<void> _onFetchHomeContent(
@@ -75,14 +85,13 @@ class ContentBloc extends Bloc<ContentEvent, ContentState> {
   ) async {
     emit(ContentLoading());
 
-    // جلب البيانات بشكل متوازي لسرعة الأداء في 2026
+    // جلب البيانات بشكل متوازي لسرعة الأداء
     final results = await Future.wait([
       repository.getLiveChannels(),
       repository.getMovies(),
       repository.getSeries(),
     ]);
 
-    // استخراج النتائج ومعالجة الـ Either (Left للخطأ، Right للنجاح)
     final channelsResult = results[0];
     final moviesResult = results[1];
     final seriesResult = results[2];
@@ -92,7 +101,6 @@ class ContentBloc extends Bloc<ContentEvent, ContentState> {
     List<Content> movies = [];
     List<Content> seriesList = [];
 
-    // فحص النتائج (Pattern Matching)
     channelsResult.fold(
       (failure) => errorMessage = failure.message,
       (data) => channels = data as List<Content>,
@@ -138,6 +146,26 @@ class ContentBloc extends Bloc<ContentEvent, ContentState> {
         movies: data.where((c) => c.type == ContentType.movie).toList(),
         series: data.where((c) => c.type == ContentType.series).toList(),
       )),
+    );
+  }
+
+  // الدالة الجديدة لمعالجة جلب رابط الفيديو من فودو
+  Future<void> _onPlayVideo(
+    PlayVideoEvent event,
+    Emitter<ContentState> emit,
+  ) async {
+    // جلب الرابط باستخدام العنوان (Title) للبحث عنه في فودو
+    final result = await repository.refreshUrl(event.content.title);
+
+    result.fold(
+      (failure) => emit(ContentError("فشل العثور على رابط البث: ${failure.message}")),
+      (streamingInfo) {
+        if (streamingInfo.url.isNotEmpty) {
+          emit(VideoReadyState(streamingInfo.url, event.content));
+        } else {
+          emit(const ContentError("عذراً، المحتوى غير متوفر على سيرفرات البث حالياً"));
+        }
+      },
     );
   }
 }
