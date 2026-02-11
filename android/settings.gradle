@@ -18,11 +18,14 @@ pluginManagement {
 
 plugins {
     id "dev.flutter.flutter-plugin-loader" version "1.0.0"
-    // تحديث إصدار Android Gradle Plugin ليتوافق مع Gradle 8.x
-    id "com.android.application" version "8.7.0" apply false
-    // التعديل الأهم: تحديث Kotlin إلى 2.1.0 لحل مشكلة Metadata
+    
+    // تم تغيير الإصدار إلى 8.5.0 لضمان التوافق مع Gradle 8.7 الموجود لديك
+    id "com.android.application" version "8.5.0" apply false
+    
+    // الحفاظ على Kotlin 2.1.0 لحل مشكلة تعارض المكتبات (Metadata)
     id "org.jetbrains.kotlin.android" version "2.1.0" apply false
-    // تحديث خدمات جوجل لضمان التوافق
+    
+    // تحديث خدمات جوجل لضمان التوافق مع بقية الإعدادات
     id "com.google.gms.google-services" version "4.4.2" apply false
 }
 
