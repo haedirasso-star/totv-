@@ -1,0 +1,119 @@
+workflows:
+  android-workflow:
+    name: ToTV+ Android Workflow
+    max_build_duration: 120
+    instance_type: mac_mini_m1
+    
+    environment:
+      android_signing:
+        - totv_keystore
+      groups:
+        - google_credentials
+      vars:
+        PACKAGE_NAME: "com.totv.plus"
+      flutter: stable
+      java: 17
+      xcode: latest
+      cocoapods: default
+      
+    scripts:
+      - name: Set up local.properties
+        script: |
+          echo "flutter.sdk=$HOME/programs/flutter" > "$CM_BUILD_DIR/android/local.properties"
+          
+      - name: Get Flutter packages
+        script: |
+          flutter packages pub get
+          
+      - name: Flutter analyze
+        script: |
+          flutter analyze
+          
+      - name: Flutter unit tests
+        script: |
+          flutter test
+        ignore_failure: true
+          
+      - name: Build APK with Flutter
+        script: |
+          flutter build apk --release --split-per-abi
+          
+      - name: Build App Bundle
+        script: |
+          flutter build appbundle --release
+          
+    artifacts:
+      - build/**/outputs/**/*.apk
+      - build/**/outputs/**/*.aab
+      - build/**/outputs/**/mapping.txt
+      - flutter_drive.log
+      
+    publishing:
+      email:
+        recipients:
+          - user@example.com
+        notify:
+          success: true
+          failure: true
+          
+      google_play:
+        credentials: $GCLOUD_SERVICE_ACCOUNT_CREDENTIALS
+        track: internal
+        submit_as_draft: true
+
+  android-release:
+    name: Android Release Build
+    max_build_duration: 120
+    instance_type: mac_mini_m1
+    
+    triggering:
+      events:
+        - tag
+      tag_patterns:
+        - pattern: 'v*'
+          include: true
+          
+    environment:
+      android_signing:
+        - totv_keystore
+      groups:
+        - google_credentials
+      vars:
+        PACKAGE_NAME: "com.totv.plus"
+      flutter: stable
+      java: 17
+      
+    scripts:
+      - name: Set up local.properties
+        script: |
+          echo "flutter.sdk=$HOME/programs/flutter" > "$CM_BUILD_DIR/android/local.properties"
+          
+      - name: Get Flutter packages
+        script: |
+          flutter packages pub get
+          
+      - name: Build APKs
+        script: |
+          flutter build apk --release --split-per-abi
+          
+      - name: Build App Bundle
+        script: |
+          flutter build appbundle --release
+          
+    artifacts:
+      - build/**/outputs/**/*.apk
+      - build/**/outputs/**/*.aab
+      - build/**/outputs/**/mapping.txt
+      
+    publishing:
+      email:
+        recipients:
+          - user@example.com
+        notify:
+          success: true
+          failure: true
+          
+      google_play:
+        credentials: $GCLOUD_SERVICE_ACCOUNT_CREDENTIALS
+        track: production
+        in_app_update_priority: 3
