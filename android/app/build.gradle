@@ -8,7 +8,8 @@ plugins {
 
 android {
     namespace "com.totv.plus"
-    compileSdk 35 // تم الرفع لـ 35 ليتوافق مع أحدث إصدارات فلاتر وكوتلن
+    // نلتزم بـ API 35 المستقر حالياً لفلاتر
+    compileSdk 35
     ndkVersion "26.1.10909125"
 
     compileOptions {
@@ -18,14 +19,13 @@ android {
 
     kotlinOptions {
         jvmTarget = '17'
-        // إضافة هذا السطر لضمان توافق المكتبات الحديثة مع محرك كوتلن الجديد
         freeCompilerArgs += ["-Xexpect-actual-classes"] 
     }
 
     defaultConfig {
         applicationId "com.totv.plus"
         minSdk 24
-        targetSdk 35 // يفضل أن يطابق compileSdk
+        targetSdk 35
         versionCode 2
         versionName "2.0.0"
         
@@ -73,7 +73,7 @@ android {
                 'META-INF/notice.txt',
                 'META-INF/ASL2.0',
                 'META-INF/*.kotlin_module',
-                'META-INF/proguard/androidx-annotations.pro' // إضافة هذا لتجنب تعارضات برو جارد
+                'META-INF/proguard/androidx-annotations.pro'
             ]
         }
     }
@@ -89,22 +89,24 @@ flutter {
 }
 
 dependencies {
-    // تم تحديث stdlib ليتماشى مع النسخة الجديدة
+    // حل مشكلة Unresolved reference و API 36:
+    // نقوم بإجبار المشروع على استخدام نسخة مستقرة من androidx.core
+    implementation 'androidx.core:core:1.13.1'
+    implementation 'androidx.core:core-ktx:1.13.1'
+    
     implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
     
-    // تحديث الـ BOM لنسخة أحدث لضمان استقرار Firebase مع Gradle 8.7
     implementation platform('com.google.firebase:firebase-bom:33.9.0')
     implementation 'com.google.firebase:firebase-analytics-ktx'
     implementation 'com.google.firebase:firebase-config-ktx'
     implementation 'com.google.firebase:firebase-crashlytics-ktx'
     
     implementation 'androidx.multidex:multidex:2.0.1'
-    implementation 'androidx.core:core-ktx:1.15.0' // تحديث بسيط للتوافق
-    implementation 'androidx.appcompat:appcompat:1.7.0'
+    implementation 'androidx.appcompat:appcompat:1.6.1'
     
-    // مكتبات Media3 مهمة جداً لـ ToTV Plus
-    implementation 'androidx.media3:media3-exoplayer:1.5.1'
-    implementation 'androidx.media3:media3-exoplayer-hls:1.5.1'
-    implementation 'androidx.media3:media3-exoplayer-dash:1.5.1'
-    implementation 'androidx.media3:media3-ui:1.5.1'
+    // استخدام إصدار مستقر من Media3 يتوافق مع Gradle 8.5/8.7
+    implementation 'androidx.media3:media3-exoplayer:1.4.1'
+    implementation 'androidx.media3:media3-exoplayer-hls:1.4.1'
+    implementation 'androidx.media3:media3-exoplayer-dash:1.4.1'
+    implementation 'androidx.media3:media3-ui:1.4.1'
 }
