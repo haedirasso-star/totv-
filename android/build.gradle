@@ -1,5 +1,6 @@
 buildscript {
-    ext.kotlin_version = '1.9.22'
+    // تحديث نسخة كوتلن لتتوافق مع المكتبات الحديثة
+    ext.kotlin_version = '2.1.0'
     
     repositories {
         google()
@@ -7,9 +8,11 @@ buildscript {
     }
 
     dependencies {
+        // استخدام النسخة المحدثة هنا
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
-        classpath 'com.google.gms:google-services:4.4.1'
-        classpath 'com.google.firebase:firebase-crashlytics-gradle:3.0.1'
+        // تحديث خدمات جوجل و Crashlytics للتوافق مع Gradle 8.x
+        classpath 'com.google.gms:google-services:4.4.2'
+        classpath 'com.google.firebase:firebase-crashlytics-gradle:3.0.2'
     }
 }
 
@@ -24,6 +27,9 @@ rootProject.buildDir = '../build'
 
 subprojects {
     project.buildDir = "${rootProject.buildDir}/${project.name}"
+}
+// قمنا بتبسيط هذا الجزء ليتوافق مع الإصدارات الأحدث من فلاتر
+subprojects {
     project.evaluationDependsOn(':app')
 }
 
