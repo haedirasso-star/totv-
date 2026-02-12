@@ -1,24 +1,51 @@
 buildscript {
-    ext.kotlin_version = '1.9.22'
+    // تحديث نسخة كوتلن لتتوافق مع محرك فلاتر والمكتبات الحديثة في ToTV Plus
+    ext.kotlin_version = '2.1.0'
+    
     repositories {
         google()
         mavenCentral()
     }
+
     dependencies {
+        // استخدام نسخة Gradle Plugin المتوافقة مع Kotlin 2.1
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
-        classpath 'com.google.gms:google-services:4.4.1'
+        // تحديث خدمات جوجل لضمان التوافق مع Gradle 8.x
+        classpath 'com.google.gms:google-services:4.4.2'
+        // إضافة دعم Crashlytics لضمان عدم فشل الـ Plugins في الملفات الأخرى
+        classpath 'com.google.firebase:firebase-crashlytics-gradle:3.0.2'
     }
 }
+
 allprojects {
     repositories {
         google()
         mavenCentral()
     }
 }
+
 rootProject.buildDir = '../build'
+
 subprojects {
     project.buildDir = "${rootProject.buildDir}/${project.name}"
+    
+    // الحل الجذري لمنع المكتبات من طلب Android API 36 تلقائياً
+    project.configurations.all {
+        resolutionStrategy.eachDependency { details ->
+            if (details.requested.group == 'androidx.core') {
+                details.useVersion '1.13.1'
+            }
+            if (details.requested.group == 'androidx.browser') {
+                details.useVersion '1.8.0'
+            }
+        }
+    }
 }
+
+subprojects {
+    project.evaluationDependsOn(':app')
+}
+
 tasks.register("clean", Delete) {
     delete rootProject.buildDir
 }
