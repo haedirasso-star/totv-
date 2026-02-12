@@ -3,13 +3,13 @@ plugins {
     id "kotlin-android"
     id "dev.flutter.flutter-gradle-plugin"
     id "com.google.gms.google-services"
-    id "com.google.firebase.crashlytics" // أضفته لضمان تفعيل التقارير التي كانت موجودة في build.gradle الرئيسي
+    id "com.google.firebase.crashlytics"
 }
 
 android {
     namespace "com.totv.plus"
-    // نلتزم بـ 34 لضمان التوافق مع Android Gradle Plugin 8.5 ومنع طلب API 36
-    compileSdk 34
+    // التحديث لـ 35 ضروري لأن مكتبات Media3 أصبحت تطلبه صراحةً
+    compileSdk 35
 
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_17
@@ -18,14 +18,14 @@ android {
 
     kotlinOptions {
         jvmTarget = '17'
-        // ضروري جداً لحل خطأ "Unresolved reference" في كود Kotlin المحدث
+        // لحل مشاكل التوافق مع Kotlin 2.1.0 في مكتبات المجتمع (Plus plugins)
         freeCompilerArgs += ["-Xexpect-actual-classes"] 
     }
 
     defaultConfig {
         applicationId "com.totv.plus"
         minSdk 24
-        targetSdk 34
+        targetSdk 35 // رفعه لـ 35 ليطابق compileSdk ويتوافق مع المتطلبات الجديدة
         versionCode 2
         versionName "2.0.0"
         
@@ -39,7 +39,6 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
             
             ndk {
-                // يساعد في تتبع أخطاء الانهيار في نسخة Release
                 debugSymbolLevel 'FULL'
             }
         }
@@ -51,15 +50,14 @@ flutter {
 }
 
 dependencies {
-    // إجبار المشروع على نسخ مستقرة من أندرويد لحل تعارض API 36 و Browser 1.9
+    // إجبار النسخ المستقرة لمنع Gradle من سحب إصدارات Alpha/Beta تطلب API 36
     implementation 'androidx.core:core:1.13.1'
     implementation 'androidx.core:core-ktx:1.13.1'
     implementation 'androidx.browser:browser:1.8.0'
     
-    // استخدام مكتبة كوتلن الموحدة
     implementation "org.jetbrains.kotlin:kotlin-stdlib"
     
-    // تحديث Firebase BOM لنسخة مستقرة تدعم Gradle الجديد
+    // استخدام Firebase BOM حديث ومستقر
     implementation platform('com.google.firebase:firebase-bom:33.9.0')
     implementation 'com.google.firebase:firebase-analytics-ktx'
     implementation 'com.google.firebase:firebase-config-ktx'
@@ -67,4 +65,9 @@ dependencies {
     
     implementation 'androidx.multidex:multidex:2.0.1'
     implementation 'androidx.appcompat:appcompat:1.6.1'
+
+    // إضافة مكتبات Media3 بنسخة مستقرة تتماشى مع الـ Resolution Strategy التي وضعناها
+    implementation 'androidx.media3:media3-exoplayer:1.5.1'
+    implementation 'androidx.media3:media3-ui:1.5.1'
+    implementation 'androidx.media3:media3-session:1.5.1'
 }
