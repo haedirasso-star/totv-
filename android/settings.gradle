@@ -19,14 +19,13 @@ pluginManagement {
 plugins {
     id "dev.flutter.flutter-plugin-loader" version "1.0.0"
     
-    // تم التحديث ليتوافق مع Gradle 8.x ولحل مشاكل الـ AAR Metadata
-    id "com.android.application" version "8.5.0" apply false
+    // تم التحديث إلى 8.7.0 ليدعم Android API 35 بشكل كامل ومستقر
+    id "com.android.application" version "8.7.0" apply false
     
-    // التعديل الأهم: رفع نسخة Kotlin إلى 2.1.0 لحل خطأ "Unresolved reference" 
-    // الذي ظهر في مكتبة package_info_plus
+    // الحفاظ على Kotlin 2.1.0 لحل مشاكل المكتبات الحديثة (Metadata)
     id "org.jetbrains.kotlin.android" version "2.1.0" apply false
     
-    // تحديث خدمات جوجل لضمان التوافق مع Kotlin 2.x
+    // تحديث خدمات جوجل لضمان التوافق التام
     id "com.google.gms.google-services" version "4.4.2" apply false
 }
 
