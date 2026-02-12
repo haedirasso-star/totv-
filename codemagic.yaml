@@ -1,0 +1,13 @@
+workflows:
+  android-build:
+    name: ToTV+ Android Build
+    max_build_duration: 60
+    instance_type: mac_mini_m1
+    environment:
+      flutter: stable
+      java: 17
+    scripts:
+      - flutter pub get
+      - flutter build apk --release --split-per-abi
+    artifacts:
+      - build/**/outputs/**/*.apk
