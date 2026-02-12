@@ -3,40 +3,68 @@ plugins {
     id "kotlin-android"
     id "dev.flutter.flutter-gradle-plugin"
     id "com.google.gms.google-services"
+    id "com.google.firebase.crashlytics" // أضفته لضمان تفعيل التقارير التي كانت موجودة في build.gradle الرئيسي
 }
+
 android {
     namespace "com.totv.plus"
+    // نلتزم بـ 34 لضمان التوافق مع Android Gradle Plugin 8.5 ومنع طلب API 36
     compileSdk 34
+
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_17
         targetCompatibility JavaVersion.VERSION_17
     }
+
     kotlinOptions {
         jvmTarget = '17'
+        // ضروري جداً لحل خطأ "Unresolved reference" في كود Kotlin المحدث
+        freeCompilerArgs += ["-Xexpect-actual-classes"] 
     }
+
     defaultConfig {
         applicationId "com.totv.plus"
         minSdk 24
         targetSdk 34
         versionCode 2
         versionName "2.0.0"
+        
         multiDexEnabled true
     }
+
     buildTypes {
         release {
             minifyEnabled true
             shrinkResources true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            
+            ndk {
+                // يساعد في تتبع أخطاء الانهيار في نسخة Release
+                debugSymbolLevel 'FULL'
+            }
         }
     }
 }
+
 flutter {
     source '../..'
 }
+
 dependencies {
-    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
-    implementation platform('com.google.firebase:firebase-bom:33.1.0')
+    // إجبار المشروع على نسخ مستقرة من أندرويد لحل تعارض API 36 و Browser 1.9
+    implementation 'androidx.core:core:1.13.1'
+    implementation 'androidx.core:core-ktx:1.13.1'
+    implementation 'androidx.browser:browser:1.8.0'
+    
+    // استخدام مكتبة كوتلن الموحدة
+    implementation "org.jetbrains.kotlin:kotlin-stdlib"
+    
+    // تحديث Firebase BOM لنسخة مستقرة تدعم Gradle الجديد
+    implementation platform('com.google.firebase:firebase-bom:33.9.0')
     implementation 'com.google.firebase:firebase-analytics-ktx'
     implementation 'com.google.firebase:firebase-config-ktx'
+    implementation 'com.google.firebase:firebase-crashlytics-ktx'
+    
     implementation 'androidx.multidex:multidex:2.0.1'
+    implementation 'androidx.appcompat:appcompat:1.6.1'
 }
